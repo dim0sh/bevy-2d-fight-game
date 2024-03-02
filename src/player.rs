@@ -62,11 +62,6 @@ fn move_player(
             transform.translation.x += time.delta_seconds() * player.speed;
             player.direction = Direction::Right;
         }
-        if keyboard_input.pressed(KeyCode::KeyS) {
-            player.low = true;
-        } else {
-            player.low = false;
-        }
-        
+        player.low = keyboard_input.pressed(KeyCode::KeyS) 
     }
 }
