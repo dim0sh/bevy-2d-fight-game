@@ -9,6 +9,7 @@ pub enum Direction {
 #[derive(Component)]
 pub struct Player {
     pub direction: Direction,
+    pub low: bool,
     pub speed: f32,
 }
 
@@ -41,6 +42,7 @@ fn spawn_player(
         },
         Player {
                 direction: Direction::Left,
+                low: false,
                 speed: 100.0,
         }   
     ));
@@ -59,6 +61,11 @@ fn move_player(
         if keyboard_input.pressed(KeyCode::KeyD) {
             transform.translation.x += time.delta_seconds() * player.speed;
             player.direction = Direction::Right;
+        }
+        if keyboard_input.pressed(KeyCode::KeyS) {
+            player.low = true;
+        } else {
+            player.low = false;
         }
         
     }

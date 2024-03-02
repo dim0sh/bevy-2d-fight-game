@@ -41,14 +41,24 @@ fn spawn_attack(
     let attack_height = 40.0;
 
     let player_direction = query.single().0.direction;
+    let player_low = query.single().0.low;
     let player_transform = query.single().1;
     let mut x_attack_direction = 0.0;
+    let mut y_attack_direction = 0.0;
     match player_direction {
         Direction::Left => {
             x_attack_direction -= 60.0;
         }
         Direction::Right => {
             x_attack_direction += 60.0;
+        }
+    }
+    match player_low {
+        true => {
+            y_attack_direction -= 30.0;
+        }
+        false => {
+            y_attack_direction += 0.0;
         }
     }
 
@@ -60,7 +70,7 @@ fn spawn_attack(
                 material: materials.add(Color::rgb(1.0, 0.0, 0.0)).into(),
                 transform: Transform::from_translation(Vec3::new(
                     player_transform.translation.x + x_attack_direction,
-                    player_transform.translation.y,
+                    player_transform.translation.y + y_attack_direction,
                     0.0,
                 )) ,
                 ..Default::default()
