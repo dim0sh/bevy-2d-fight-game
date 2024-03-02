@@ -6,7 +6,7 @@ mod attack;
 
 use camera::CameraPlugin;
 use player::PlayerPlugin;
-use attack::{AttackPlugin, AttackTimer};
+use attack::AttackPlugin;
 
 fn main() {
     App::new()

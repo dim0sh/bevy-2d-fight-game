@@ -1,4 +1,4 @@
-use bevy::{ecs::query, log::tracing_subscriber::fmt::time, prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use crate::player::{Player, Direction};
 #[derive(Component)]
 pub struct Attack {
