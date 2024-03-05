@@ -1,4 +1,5 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy_rapier2d::prelude::*;
 
 #[derive(Copy,Clone,Debug)]
 pub enum Direction {
@@ -16,7 +17,9 @@ pub struct Player {
 #[derive(Bundle)]
 pub struct PlayerBundle {
     model: MaterialMesh2dBundle<ColorMaterial>,
-}
+    controller: KinematicCharacterController,
+    collider: Collider,
+}   
 
 pub struct PlayerPlugin;
 
@@ -39,12 +42,15 @@ fn spawn_player(
                 material: materials.add(Color::rgb(0.5, 0.5, 1.0)).into(),
                 ..Default::default()
             },
+            controller: KinematicCharacterController::default(),
+            collider: Collider::cuboid(40.0-20.0, 100.0-50.0)
+            
         },
         Player {
                 direction: Direction::Left,
                 low: false,
                 speed: 100.0,
-        }   
+        },
     ));
 }
 

@@ -1,5 +1,6 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use crate::player::{Player, Direction};
+use bevy_rapier2d::prelude::*;
 #[derive(Component)]
 pub struct Attack {
     damage: f32,
@@ -10,6 +11,7 @@ pub struct Attack {
 pub struct AttackBundle {
     model: MaterialMesh2dBundle<ColorMaterial>,
     timer: AttackTimer,
+    collider: Collider,
 }
 
 #[derive(Component)]
@@ -77,7 +79,8 @@ fn spawn_attack(
             },
             timer: AttackTimer {
                 timer: Timer::from_seconds(0.2, TimerMode::Once)
-            }
+            },
+            collider: Collider::cuboid(attack_width-30.0, attack_height-20.0),
         },
         Attack {
             damage: 10.0,
