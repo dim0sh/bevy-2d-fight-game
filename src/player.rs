@@ -57,17 +57,19 @@ fn spawn_player(
 fn move_player(
     time: Res<Time>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&mut Player, &mut Transform)>
+    mut query: Query<(&mut Player, &mut KinematicCharacterController)>
 ) {
-    for (mut player, mut transform) in query.iter_mut() {
+    for (mut player, mut controller) in query.iter_mut() {
+        let mut vec = Vec2::new(0.0, 0.0);
         if keyboard_input.pressed(KeyCode::KeyA) {
-            transform.translation.x -= time.delta_seconds() * player.speed;
+            vec.x -= time.delta_seconds() * player.speed;
             player.direction = Direction::Left;
         }
         if keyboard_input.pressed(KeyCode::KeyD) {
-            transform.translation.x += time.delta_seconds() * player.speed;
+            vec.x += time.delta_seconds() * player.speed;
             player.direction = Direction::Right;
         }
+        controller.translation = Some(vec);
         player.low = keyboard_input.pressed(KeyCode::KeyS) 
     }
 }
