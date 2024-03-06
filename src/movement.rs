@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use std::collections::HashSet;
-use crate::player::Player;
 #[derive(Component,Copy,Clone,Debug)]
 pub struct Velocity {
     pub velocity: Vec2,
@@ -12,7 +11,6 @@ pub enum PlayerInput{
     Right,
     Up,
     Down,
-    None,
     Attack,
 }
 #[derive(Event,Clone,Debug,PartialEq)]
@@ -23,11 +21,11 @@ pub struct MovementPlugin;
 
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreUpdate, handle_input);
+        app.add_systems(PreUpdate, handle_keyboard_input);
     }
 }
 
-fn handle_input(
+fn handle_keyboard_input(
     keyboard_input: Res<Input<KeyCode>>,
     mut ev_input: EventWriter<PlayerInputEvent>,
 ) {

@@ -12,6 +12,8 @@ pub enum AttackHeight {
     Normal,
     High,
 }
+#[derive(Component)]
+pub struct AttackCooldown(pub Timer);
 
 #[derive(Component)]
 pub struct Player;
@@ -24,6 +26,7 @@ pub struct PlayerBundle {
     direction: Direction,
     attack_height: AttackHeight,
     velocity: Velocity,
+    attack_cooldown: AttackCooldown,
 }   
 
 pub struct PlayerPlugin;
@@ -54,6 +57,7 @@ fn spawn_player(
             direction: Direction::Left,
             velocity: Velocity { velocity: Vec2::new(0.0, 0.0), max_speed: 100.0},
             attack_height: AttackHeight::Normal,
+            attack_cooldown: AttackCooldown(Timer::from_seconds(0.5, TimerMode::Once)),
         },
         Player,
     ));
