@@ -1,4 +1,4 @@
-use bevy::{core_pipeline::core_2d::graph::input, prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::prelude::*;
 use crate::movement::{Velocity, PlayerInputEvent, PlayerInput};
 #[derive(Component,Copy,Clone,Debug)]
@@ -52,7 +52,10 @@ fn spawn_player(
                 material: materials.add(ColorMaterial::from(Color::rgb(0.5, 0.5, 1.0))).into(),
                 ..Default::default()
             },
-            controller: KinematicCharacterController::default(),
+            controller: KinematicCharacterController{
+                filter_flags: QueryFilterFlags::EXCLUDE_SENSORS,
+                ..Default::default()
+            },
             collider: Collider::cuboid(40.0-20.0, 100.0-50.0),
             direction: Direction::Left,
             velocity: Velocity { velocity: Vec2::new(0.0, 0.0), max_speed: 100.0},
@@ -91,6 +94,5 @@ fn move_player(
                 *attack_height = AttackHeight::Normal;
             }
         }
-    }
-    
+    }   
 }

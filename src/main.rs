@@ -10,7 +10,7 @@ use camera::CameraPlugin;
 use player::PlayerPlugin;
 use attack::AttackPlugin;
 use movement::MovementPlugin;
-use movement::{PlayerInput, PlayerInputEvent};
+use movement::PlayerInputEvent;
 
 fn main() {
     App::new()
