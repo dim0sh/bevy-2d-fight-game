@@ -1,5 +1,6 @@
-use bevy::{asset::transformer, prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use crate::player::{AttackHeight, Direction, Player};
+use crate::movement::{PlayerInputEvent, PlayerInput};
 use bevy_rapier2d::prelude::*;
 #[derive(Component)]
 pub struct Attack {
@@ -34,62 +35,63 @@ fn spawn_attack(
     mut meshes: ResMut<Assets<Mesh>>, 
     mut materials: ResMut<Assets<ColorMaterial>>,
     query: Query<(&AttackHeight, &Direction, &Transform),With<Player>>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut ev_input: EventReader<PlayerInputEvent>,
 ) {
-    if !keyboard_input.just_pressed(KeyCode::Space) {
-        return;
-    }
 
     let width = 60.0;
     let height = 40.0;
-
-    for (attack_height, player_direction, player_transform) in query.iter() {
-        let mut x_attack_direction = 0.0;
-        let mut y_attack_direction = 0.0;
-        match player_direction {
-            Direction::Left => {
-                x_attack_direction -= 60.0;
-            }
-            Direction::Right => {
-                x_attack_direction += 60.0;
-            }
+    for input in ev_input.read() {
+        if !(input.0.contains(&PlayerInput::Attack)) {
+            return;
         }
-        match attack_height {
-            AttackHeight::Low => {
-                y_attack_direction -= 30.0;
+        for (attack_height, player_direction, player_transform) in query.iter() {
+            let mut x_attack_direction = 0.0;
+            let mut y_attack_direction = 0.0;
+            match player_direction {
+                Direction::Left => {
+                    x_attack_direction -= 60.0;
+                }
+                Direction::Right => {
+                    x_attack_direction += 60.0;
+                }
             }
-            AttackHeight::Normal => {
-                y_attack_direction += 0.0;
+            match attack_height {
+                AttackHeight::Low => {
+                    y_attack_direction -= 30.0;
+                }
+                AttackHeight::Normal => {
+                    y_attack_direction += 0.0;
+                }
+                AttackHeight::High => {
+                    y_attack_direction += 30.0;
+                }
             }
-            AttackHeight::High => {
-                y_attack_direction += 30.0;
-            }
+
+
+            commands.spawn((
+                AttackBundle {
+                                    model: MaterialMesh2dBundle {
+                                        mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(width, height)))).into(),
+                                        material: materials.add(ColorMaterial::from(Color::rgb(1.0, 0.0, 0.0))).into(),
+                                        transform: Transform::from_translation(Vec3::new(
+                                            player_transform.translation.x + x_attack_direction,
+                                            player_transform.translation.y + y_attack_direction,
+                                            0.0,
+                                        )) ,
+                                        ..Default::default()
+                                    },
+                    timer: AttackTimer {
+                        timer: Timer::from_seconds(0.2, TimerMode::Once)
+                    },
+                    collider: Collider::cuboid(width-30.0, height-20.0),
+                    sensor: Sensor,
+                },
+                Attack {
+                    damage: 10.0,
+                    range: 100.0,
+                },
+            ));
         }
-
-
-        commands.spawn((
-            AttackBundle {
-                model: MaterialMesh2dBundle {
-                    mesh: meshes.add(Rectangle::new(width, height)).into(),
-                    material: materials.add(Color::rgb(1.0, 0.0, 0.0)).into(),
-                    transform: Transform::from_translation(Vec3::new(
-                        player_transform.translation.x + x_attack_direction,
-                        player_transform.translation.y + y_attack_direction,
-                        0.0,
-                    )) ,
-                    ..Default::default()
-                },
-                timer: AttackTimer {
-                    timer: Timer::from_seconds(0.2, TimerMode::Once)
-                },
-                collider: Collider::cuboid(width-30.0, height-20.0),
-                sensor: Sensor,
-            },
-            Attack {
-                damage: 10.0,
-                range: 100.0,
-            },
-        ));
     }
     
 }

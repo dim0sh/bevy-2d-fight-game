@@ -1,6 +1,6 @@
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{core_pipeline::core_2d::graph::input, prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::prelude::*;
-use crate::movement;
+use crate::movement::{Velocity, PlayerInputEvent, PlayerInput};
 #[derive(Component,Copy,Clone,Debug)]
 pub enum Direction {
     Left,
@@ -23,7 +23,7 @@ pub struct PlayerBundle {
     collider: Collider,
     direction: Direction,
     attack_height: AttackHeight,
-    velocity: movement::Velocity,
+    velocity: Velocity,
 }   
 
 pub struct PlayerPlugin;
@@ -40,17 +40,19 @@ fn spawn_player(
     mut meshes: ResMut<Assets<Mesh>>, 
     mut materials: ResMut<Assets<ColorMaterial>>
 ) {
+    let width = 40.0;
+    let height = 100.0;
     commands.spawn((
         PlayerBundle {
             model: MaterialMesh2dBundle {
-                mesh: meshes.add(Rectangle::new( 40.0, 100.0 )).into(),
-                material: materials.add(Color::rgb(0.5, 0.5, 1.0)).into(),
+                mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(width, height)))).into(),
+                material: materials.add(ColorMaterial::from(Color::rgb(0.5, 0.5, 1.0))).into(),
                 ..Default::default()
             },
             controller: KinematicCharacterController::default(),
             collider: Collider::cuboid(40.0-20.0, 100.0-50.0),
             direction: Direction::Left,
-            velocity: movement::Velocity { velocity: Vec2::new(0.0, 0.0), max_speed: 100.0},
+            velocity: Velocity { velocity: Vec2::new(0.0, 0.0), max_speed: 100.0},
             attack_height: AttackHeight::Normal,
         },
         Player,
@@ -59,29 +61,32 @@ fn spawn_player(
 
 fn move_player(
     time: Res<Time>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&mut AttackHeight,&mut movement::Velocity,&mut Direction, &mut KinematicCharacterController),With<Player>>
+    mut query: Query<(&mut AttackHeight,&mut Velocity,&mut Direction, &mut KinematicCharacterController),With<Player>>,
+    mut ev_input: EventReader<PlayerInputEvent>,
 ) {
-    for (mut attack_height,mut velocity, mut direction, mut controller) in query.iter_mut() {
-        if keyboard_input.pressed(KeyCode::KeyA) {
-            velocity.velocity.x = (-velocity.max_speed).max(velocity.velocity.x - 10.0);
-            *direction = Direction::Left;
-        } else if keyboard_input.pressed(KeyCode::KeyD) {
-            velocity.velocity.x = velocity.max_speed.min(velocity.velocity.x + 10.0);
-            *direction = Direction::Right;
-        } else if velocity.velocity.x > 0.0 {
-            velocity.velocity.x = (velocity.velocity.x - 10.0).max(0.0);
-        } else if velocity.velocity.x < 0.0 {
-            velocity.velocity.x = (velocity.velocity.x + 10.0).min(0.0);
-        }
-        	
-        controller.translation = Some(velocity.velocity * time.delta_seconds());
-        if keyboard_input.pressed(KeyCode::KeyS) {
-            *attack_height = AttackHeight::Low;
-        } else if keyboard_input.pressed(KeyCode::KeyW) {
-            *attack_height = AttackHeight::High; 
-        } else {
-            *attack_height = AttackHeight::Normal;
+    for input in ev_input.read() {
+        for (mut attack_height,mut velocity, mut direction, mut controller) in query.iter_mut() {
+            if input.0.contains(&PlayerInput::Left){
+                velocity.velocity.x = (-velocity.max_speed).max(velocity.velocity.x - 10.0);
+                *direction = Direction::Left;
+            } else if input.0.contains(&PlayerInput::Right){
+                velocity.velocity.x = velocity.max_speed.min(velocity.velocity.x + 10.0);
+                *direction = Direction::Right;
+            } else if velocity.velocity.x > 0.0 {
+                velocity.velocity.x = (velocity.velocity.x - 10.0).max(0.0);
+            } else if velocity.velocity.x < 0.0 {
+                velocity.velocity.x = (velocity.velocity.x + 10.0).min(0.0);
+            }
+                
+            controller.translation = Some(velocity.velocity * time.delta_seconds());
+            if input.0.contains(&PlayerInput::Down){
+                *attack_height = AttackHeight::Low;
+            } else if input.0.contains(&PlayerInput::Up){
+                *attack_height = AttackHeight::High; 
+            } else {
+                *attack_height = AttackHeight::Normal;
+            }
         }
     }
+    
 }
