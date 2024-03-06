@@ -1,24 +1,29 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::prelude::*;
-
-#[derive(Copy,Clone,Debug)]
+use crate::movement;
+#[derive(Component,Copy,Clone,Debug)]
 pub enum Direction {
     Left,
     Right,
 }
+#[derive(Component,Copy,Clone,Debug)]
+pub enum AttackHeight {
+    Low,
+    Normal,
+    High,
+}
 
 #[derive(Component)]
-pub struct Player {
-    pub direction: Direction,
-    pub low: bool,
-    pub speed: f32,
-}
+pub struct Player;
 
 #[derive(Bundle)]
 pub struct PlayerBundle {
     model: MaterialMesh2dBundle<ColorMaterial>,
     controller: KinematicCharacterController,
     collider: Collider,
+    direction: Direction,
+    attack_height: AttackHeight,
+    velocity: movement::Velocity,
 }   
 
 pub struct PlayerPlugin;
@@ -43,33 +48,40 @@ fn spawn_player(
                 ..Default::default()
             },
             controller: KinematicCharacterController::default(),
-            collider: Collider::cuboid(40.0-20.0, 100.0-50.0)
-            
+            collider: Collider::cuboid(40.0-20.0, 100.0-50.0),
+            direction: Direction::Left,
+            velocity: movement::Velocity { velocity: Vec2::new(0.0, 0.0), max_speed: 100.0},
+            attack_height: AttackHeight::Normal,
         },
-        Player {
-                direction: Direction::Left,
-                low: false,
-                speed: 100.0,
-        },
+        Player,
     ));
 }
 
 fn move_player(
     time: Res<Time>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&mut Player, &mut KinematicCharacterController)>
+    mut query: Query<(&mut AttackHeight,&mut movement::Velocity,&mut Direction, &mut KinematicCharacterController),With<Player>>
 ) {
-    for (mut player, mut controller) in query.iter_mut() {
-        let mut vec = Vec2::new(0.0, 0.0);
+    for (mut attack_height,mut velocity, mut direction, mut controller) in query.iter_mut() {
         if keyboard_input.pressed(KeyCode::KeyA) {
-            vec.x -= time.delta_seconds() * player.speed;
-            player.direction = Direction::Left;
+            velocity.velocity.x = (-velocity.max_speed).max(velocity.velocity.x - 10.0);
+            *direction = Direction::Left;
+        } else if keyboard_input.pressed(KeyCode::KeyD) {
+            velocity.velocity.x = velocity.max_speed.min(velocity.velocity.x + 10.0);
+            *direction = Direction::Right;
+        } else if velocity.velocity.x > 0.0 {
+            velocity.velocity.x = (velocity.velocity.x - 10.0).max(0.0);
+        } else if velocity.velocity.x < 0.0 {
+            velocity.velocity.x = (velocity.velocity.x + 10.0).min(0.0);
         }
-        if keyboard_input.pressed(KeyCode::KeyD) {
-            vec.x += time.delta_seconds() * player.speed;
-            player.direction = Direction::Right;
+        	
+        controller.translation = Some(velocity.velocity * time.delta_seconds());
+        if keyboard_input.pressed(KeyCode::KeyS) {
+            *attack_height = AttackHeight::Low;
+        } else if keyboard_input.pressed(KeyCode::KeyW) {
+            *attack_height = AttackHeight::High; 
+        } else {
+            *attack_height = AttackHeight::Normal;
         }
-        controller.translation = Some(vec);
-        player.low = keyboard_input.pressed(KeyCode::KeyS) 
     }
 }
