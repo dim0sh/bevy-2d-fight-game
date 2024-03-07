@@ -12,6 +12,7 @@ pub enum PlayerInput{
     Up,
     Down,
     Attack,
+    ResetLevel,
 }
 #[derive(Event,Clone,Debug,PartialEq)]
 pub struct PlayerInputEvent(pub HashSet<PlayerInput>);
@@ -44,6 +45,9 @@ fn handle_keyboard_input(
     }
     if keyboard_input.pressed(KeyCode::Space) {
         input.insert(PlayerInput::Attack);
+    }
+    if keyboard_input.pressed(KeyCode::R) {
+        input.insert(PlayerInput::ResetLevel);
     }
 
     ev_input.send(PlayerInputEvent(input));

@@ -15,7 +15,7 @@ pub enum AttackHeight {
 #[derive(Component)]
 pub struct AttackCooldown(pub Timer);
 
-#[derive(Component)]
+#[derive(Component,Clone)]
 pub struct Player;
 
 #[derive(Bundle)]

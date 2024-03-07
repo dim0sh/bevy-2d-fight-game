@@ -5,12 +5,14 @@ mod camera;
 mod player;
 mod attack;
 mod movement;
+mod world;
 
 use camera::CameraPlugin;
 use player::PlayerPlugin;
 use attack::AttackPlugin;
 use movement::MovementPlugin;
 use movement::PlayerInputEvent;
+use world::WorldPlugin;
 
 fn main() {
     App::new()
@@ -26,6 +28,7 @@ fn main() {
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(CameraPlugin)
+        .add_plugins(WorldPlugin)
         .add_plugins(MovementPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(AttackPlugin)
