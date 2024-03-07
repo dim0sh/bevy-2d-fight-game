@@ -1,6 +1,6 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use crate::player::{AttackCooldown, AttackHeight, Direction, Player};
-use crate::movement::{PlayerInputEvent, PlayerInput};
+use crate::movement::{Velocity, PlayerInputEvent, PlayerInput};
 use bevy_rapier2d::prelude::*;
 #[derive(Component)]
 pub struct Attack;
@@ -17,6 +17,7 @@ pub struct AttackBundle {
     collider: Collider,
     sensor: Sensor,
     attack_properties: AttackProperties,
+    velocity: Velocity,
 }
 
 #[derive(Component)]
@@ -29,7 +30,7 @@ pub struct AttackPlugin;
 impl Plugin for AttackPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, spawn_attack)
-            .add_systems(PostUpdate, despawn_attack);
+            .add_systems(PostUpdate, (despawn_attack, attack_velocity));
     }
 }
 
@@ -38,11 +39,11 @@ fn spawn_attack(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>, 
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut query: Query<(&mut AttackCooldown,&AttackHeight, &Direction, &Transform),With<Player>>,
+    mut query: Query<(&mut AttackCooldown,&AttackHeight, &Direction, &Transform, &Velocity),With<Player>>,
     mut ev_input: EventReader<PlayerInputEvent>,
 ) {
     
-    for (mut attack_cooldown,attack_height, player_direction, player_transform) in query.iter_mut() {
+    for (mut attack_cooldown,attack_height, player_direction, player_transform, velocity) in query.iter_mut() {
         attack_cooldown.0.tick(time.delta());
         for input in ev_input.read() {
             if !(input.0.contains(&PlayerInput::Attack)) {return}
@@ -88,6 +89,7 @@ fn spawn_attack(
                     },
                     collider: Collider::cuboid(width-30.0, height-20.0),
                     sensor: Sensor,
+                    velocity: *velocity,
                     attack_properties: AttackProperties {
                         damage: 10.0,
                         range: 60.0,
@@ -96,6 +98,16 @@ fn spawn_attack(
                 Attack,
             ));
         }
+    }
+}
+
+fn attack_velocity(
+    time: Res<Time>,
+    mut query: Query<(&mut Velocity, &mut Transform), With<Attack>>,
+) {
+    for (velocity,mut transform) in query.iter_mut() {
+        transform.translation.x += velocity.velocity.x * time.delta_seconds();
+        transform.translation.y += velocity.velocity.y * time.delta_seconds();
     }
 }
     
