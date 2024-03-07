@@ -45,36 +45,31 @@ fn spawn_attack(
     for (mut attack_cooldown,attack_height, player_direction, player_transform) in query.iter_mut() {
         attack_cooldown.0.tick(time.delta());
         for input in ev_input.read() {
-            if !(input.0.contains(&PlayerInput::Attack)) {
-                return;
-            }
-            if !attack_cooldown.0.finished() {
-                return;
-            }
-            let width = 60.0;
-            let height = 40.0;
+            if !(input.0.contains(&PlayerInput::Attack)) {return}
+            if !attack_cooldown.0.finished() {return}
+            let width = 11.0;
+            let height = 11.0;
             let mut x_attack_direction = 0.0;
             let mut y_attack_direction = 0.0;
             match player_direction {
                 Direction::Left => {
-                    x_attack_direction -= 60.0;
+                    x_attack_direction -= 20.0;
                 }
                 Direction::Right => {
-                    x_attack_direction += 60.0;
+                    x_attack_direction += 20.0;
                 }
             }
             match attack_height {
                 AttackHeight::Low => {
-                    y_attack_direction -= 30.0;
+                    y_attack_direction -= 10.0;
                 }
                 AttackHeight::Normal => {
                     y_attack_direction += 0.0;
                 }
-                AttackHeight::High => {
-                    y_attack_direction += 30.0;
-                }
             }
             attack_cooldown.0.reset();
+
+            let offset_vec = Vec2::new(704.0, 530.0);
 
             commands.spawn((
                 AttackBundle {
@@ -82,8 +77,8 @@ fn spawn_attack(
                         mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(width, height)))).into(),
                         material: materials.add(ColorMaterial::from(Color::rgb(1.0, 0.0, 0.0))).into(),
                         transform: Transform::from_translation(Vec3::new(
-                            player_transform.translation.x + x_attack_direction,
-                            player_transform.translation.y + y_attack_direction,
+                            (player_transform.translation.x + x_attack_direction) - offset_vec.x,
+                            (player_transform.translation.y + y_attack_direction) - offset_vec.y,
                             0.0,
                         )) ,
                         ..Default::default()

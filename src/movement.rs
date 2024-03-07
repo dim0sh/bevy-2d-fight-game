@@ -5,6 +5,14 @@ pub struct Velocity {
     pub velocity: Vec2,
     pub max_speed: f32,
 }
+impl Default for Velocity {
+    fn default() -> Self {
+        Self {
+            velocity: Vec2::new(0.0, 0.0),
+            max_speed: 100.0,
+        }
+    }
+}
 #[derive(Copy,Clone,Debug,PartialEq,Hash,Eq)]
 pub enum PlayerInput{
     Left,

@@ -10,60 +10,20 @@ pub enum Direction {
 pub enum AttackHeight {
     Low,
     Normal,
-    High,
 }
-#[derive(Component)]
+#[derive(Component,Clone,Debug)]
 pub struct AttackCooldown(pub Timer);
 
 #[derive(Component,Clone)]
 pub struct Player;
 
-#[derive(Bundle)]
-pub struct PlayerBundle {
-    model: MaterialMesh2dBundle<ColorMaterial>,
-    controller: KinematicCharacterController,
-    collider: Collider,
-    direction: Direction,
-    attack_height: AttackHeight,
-    velocity: Velocity,
-    attack_cooldown: AttackCooldown,
-}   
-
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_player)
+        app//.add_systems(Startup, spawn_player)
             .add_systems(Update, move_player);
     }
-}
-
-fn spawn_player(
-    mut commands: Commands, 
-    mut meshes: ResMut<Assets<Mesh>>, 
-    mut materials: ResMut<Assets<ColorMaterial>>
-) {
-    let width = 40.0;
-    let height = 100.0;
-    commands.spawn((
-        PlayerBundle {
-            model: MaterialMesh2dBundle {
-                mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(width, height)))).into(),
-                material: materials.add(ColorMaterial::from(Color::rgb(0.5, 0.5, 1.0))).into(),
-                ..Default::default()
-            },
-            controller: KinematicCharacterController{
-                filter_flags: QueryFilterFlags::EXCLUDE_SENSORS,
-                ..Default::default()
-            },
-            collider: Collider::cuboid(40.0-20.0, 100.0-50.0),
-            direction: Direction::Left,
-            velocity: Velocity { velocity: Vec2::new(0.0, 0.0), max_speed: 100.0},
-            attack_height: AttackHeight::Normal,
-            attack_cooldown: AttackCooldown(Timer::from_seconds(0.5, TimerMode::Once)),
-        },
-        Player,
-    ));
 }
 
 fn move_player(
@@ -88,8 +48,6 @@ fn move_player(
             controller.translation = Some(velocity.velocity * time.delta_seconds());
             if input.0.contains(&PlayerInput::Down){
                 *attack_height = AttackHeight::Low;
-            } else if input.0.contains(&PlayerInput::Up){
-                *attack_height = AttackHeight::High; 
             } else {
                 *attack_height = AttackHeight::Normal;
             }

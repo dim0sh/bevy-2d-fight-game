@@ -56,10 +56,13 @@ pub struct PlayerBundle {
     pub player: player::Player,
     #[from_entity_instance]
     entity_instance: EntityInstance,
-    // velocity
+    velocity: movement::Velocity,
     controller: KinematicCharacterController,
     #[from_entity_instance]
     collider: ColliderBundle,
+    attack_height: player::AttackHeight,
+    attack_cooldown: player::AttackCooldown,
+    direction: player::Direction,
 }
 
 impl Default for PlayerBundle {
@@ -70,14 +73,18 @@ impl Default for PlayerBundle {
             },
             player: player::Player,
             entity_instance: Default::default(),
-            // velocity: Default::default(),
+            velocity: Default::default(),
             controller: KinematicCharacterController {
                 autostep: None,
                 snap_to_ground: None,
                 custom_mass: Some(100.0),
+
                 ..Default::default()
             },
             collider: Default::default(),
+            attack_height: player::AttackHeight::Normal,
+            attack_cooldown: player::AttackCooldown(Timer::from_seconds(0.5, TimerMode::Once)),
+            direction: player::Direction::Left,
         }
     }
 }
@@ -92,7 +99,7 @@ impl From<&EntityInstance> for ColliderBundle {
 
         match entity_instance.identifier.as_ref() {
             "Player" => ColliderBundle {
-                collider: Collider::cuboid(14.0, 14.0),
+                collider: Collider::cuboid(14.0, 20.0),
                 ..Default::default()
             },
             _ => ColliderBundle::default(),
