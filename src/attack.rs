@@ -1,6 +1,6 @@
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use crate::movement::{PlayerInput, PlayerInputEvent, Velocity};
 use crate::player::{AttackCooldown, AttackHeight, Direction, Player};
-use crate::movement::{Velocity, PlayerInputEvent, PlayerInput};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::prelude::*;
 #[derive(Component)]
 pub struct Attack;
@@ -37,17 +37,31 @@ impl Plugin for AttackPlugin {
 fn spawn_attack(
     time: Res<Time>,
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>, 
+    mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut query: Query<(&mut AttackCooldown,&AttackHeight, &Direction, &Transform, &Velocity),With<Player>>,
+    mut query: Query<
+        (
+            &mut AttackCooldown,
+            &AttackHeight,
+            &Direction,
+            &Transform,
+            &Velocity,
+        ),
+        With<Player>,
+    >,
     mut ev_input: EventReader<PlayerInputEvent>,
 ) {
-    
-    for (mut attack_cooldown,attack_height, player_direction, player_transform, velocity) in query.iter_mut() {
+    for (mut attack_cooldown, attack_height, player_direction, player_transform, velocity) in
+        query.iter_mut()
+    {
         attack_cooldown.0.tick(time.delta());
         for input in ev_input.read() {
-            if !(input.0.contains(&PlayerInput::Attack)) {return}
-            if !attack_cooldown.0.finished() {return}
+            if !(input.0.contains(&PlayerInput::Attack)) {
+                return;
+            }
+            if !attack_cooldown.0.finished() {
+                return;
+            }
             let width = 11.0;
             let height = 11.0;
             let mut x_attack_direction = 0.0;
@@ -75,19 +89,23 @@ fn spawn_attack(
             commands.spawn((
                 AttackBundle {
                     model: MaterialMesh2dBundle {
-                        mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(width, height)))).into(),
-                        material: materials.add(ColorMaterial::from(Color::rgb(1.0, 0.0, 0.0))).into(),
+                        mesh: meshes
+                            .add(Mesh::from(shape::Quad::new(Vec2::new(width, height))))
+                            .into(),
+                        material: materials
+                            .add(ColorMaterial::from(Color::rgb(1.0, 0.0, 0.0)))
+                            .into(),
                         transform: Transform::from_translation(Vec3::new(
                             (player_transform.translation.x + x_attack_direction) - offset_vec.x,
                             (player_transform.translation.y + y_attack_direction) - offset_vec.y,
                             0.0,
-                        )) ,
+                        )),
                         ..Default::default()
                     },
                     timer: AttackDespawnTimer {
-                        timer: Timer::from_seconds(0.2, TimerMode::Once)
+                        timer: Timer::from_seconds(0.2, TimerMode::Once),
                     },
-                    collider: Collider::cuboid(width-30.0, height-20.0),
+                    collider: Collider::cuboid(width - 30.0, height - 20.0),
                     sensor: Sensor,
                     velocity: *velocity,
                     attack_properties: AttackProperties {
@@ -105,12 +123,11 @@ fn attack_velocity(
     time: Res<Time>,
     mut query: Query<(&mut Velocity, &mut Transform), With<Attack>>,
 ) {
-    for (velocity,mut transform) in query.iter_mut() {
+    for (velocity, mut transform) in query.iter_mut() {
         transform.translation.x += velocity.velocity.x * time.delta_seconds();
         transform.translation.y += velocity.velocity.y * time.delta_seconds();
     }
 }
-    
 
 fn despawn_attack(
     time: Res<Time>,

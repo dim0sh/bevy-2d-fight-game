@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use std::collections::HashSet;
-#[derive(Component,Copy,Clone,Debug)]
+#[derive(Component, Copy, Clone, Debug)]
 pub struct Velocity {
     pub velocity: Vec2,
     pub max_speed: f32,
@@ -13,8 +13,8 @@ impl Default for Velocity {
         }
     }
 }
-#[derive(Copy,Clone,Debug,PartialEq,Hash,Eq)]
-pub enum PlayerInput{
+#[derive(Copy, Clone, Debug, PartialEq, Hash, Eq)]
+pub enum PlayerInput {
     Left,
     Right,
     Up,
@@ -22,9 +22,8 @@ pub enum PlayerInput{
     Attack,
     ResetLevel,
 }
-#[derive(Event,Clone,Debug,PartialEq)]
+#[derive(Event, Clone, Debug, PartialEq)]
 pub struct PlayerInputEvent(pub HashSet<PlayerInput>);
-
 
 pub struct MovementPlugin;
 

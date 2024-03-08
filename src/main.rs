@@ -1,17 +1,17 @@
-use bevy::{prelude::*,window::PresentMode};
+use bevy::{prelude::*, window::PresentMode};
 use bevy_rapier2d::prelude::*;
 
-mod camera;
-mod player;
 mod attack;
+mod camera;
 mod movement;
+mod player;
 mod world;
 
-use camera::CameraPlugin;
-use player::PlayerPlugin;
 use attack::AttackPlugin;
+use camera::CameraPlugin;
 use movement::MovementPlugin;
 use movement::PlayerInputEvent;
+use player::PlayerPlugin;
 use world::WorldPlugin;
 
 fn main() {

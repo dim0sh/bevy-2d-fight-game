@@ -1,5 +1,5 @@
-use bevy::{prelude::*, render::camera};
 use crate::player::Player;
+use bevy::prelude::*;
 
 pub struct CameraPlugin;
 
@@ -15,14 +15,14 @@ fn spawn_camera(mut commands: Commands) {
 }
 
 fn camera_movement(
-    mut query: Query<(&mut Transform), With<Camera>>,
-    mut player_query: Query<(&Transform), (With<Player>, Without<Camera>)>,
+    mut query: Query<&mut Transform, With<Camera>>,
+    player_query: Query<&Transform, (With<Player>, Without<Camera>)>,
 ) {
     let offset_vec = Vec2::new(704.0, 530.0);
-    for (mut transform) in query.iter_mut() {
-        for (player_transform) in player_query.iter() {
+    for mut transform in query.iter_mut() {
+        for player_transform in player_query.iter() {
             transform.translation.x = player_transform.translation.x - offset_vec.x;
             // transform.translation.y = player_transform.translation.y;
         }
     }
-}    
+}

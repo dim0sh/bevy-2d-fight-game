@@ -1,36 +1,34 @@
+use crate::{movement, player};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
-use bevy_rapier2d::{control::KinematicCharacterController, dynamics::RigidBody, geometry::{Collider, Friction}};
+use bevy_rapier2d::{
+    control::KinematicCharacterController,
+    dynamics::RigidBody,
+    geometry::{Collider, Friction},
+};
 use std::collections::{HashMap, HashSet};
-use crate::{movement, player};
 
 pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((
-            LdtkPlugin,
-        ))
-        .insert_resource(LevelSelection::Uid(0))
-        .insert_resource(LdtkSettings {
-            level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
-                load_level_neighbors: true,
-            },
-            set_clear_color: SetClearColor::FromLevelBackground,
-            ..Default::default()
-        })
-        .register_ldtk_int_cell::<WallBundle>(1)
-        .register_ldtk_entity::<PlayerBundle>("Player")
-        .add_systems(Startup, (
-            setup,
-        ))
-        .add_systems(Update, (
-            spawn_wall_collision,
-            update_level_selection,
-            restart_level,
-        ));
+        app.add_plugins((LdtkPlugin,))
+            .insert_resource(LevelSelection::Uid(0))
+            .insert_resource(LdtkSettings {
+                level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
+                    load_level_neighbors: true,
+                },
+                set_clear_color: SetClearColor::FromLevelBackground,
+                ..Default::default()
+            })
+            .register_ldtk_int_cell::<WallBundle>(1)
+            .register_ldtk_entity::<PlayerBundle>("Player")
+            .add_systems(Startup, (setup,))
+            .add_systems(
+                Update,
+                (spawn_wall_collision, update_level_selection, restart_level),
+            );
     }
-            
 }
 
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -96,7 +94,6 @@ pub struct ColliderBundle {
 
 impl From<&EntityInstance> for ColliderBundle {
     fn from(entity_instance: &EntityInstance) -> ColliderBundle {
-
         match entity_instance.identifier.as_ref() {
             "Player" => ColliderBundle {
                 collider: Collider::cuboid(14.0, 20.0),
@@ -281,7 +278,7 @@ pub fn update_level_selection(
 pub fn restart_level(
     mut commands: Commands,
     level_query: Query<Entity, With<LevelIid>>,
-    mut input: EventReader<movement::PlayerInputEvent>
+    mut input: EventReader<movement::PlayerInputEvent>,
 ) {
     for event in input.read() {
         if event.0.contains(&movement::PlayerInput::ResetLevel) {
@@ -290,5 +287,4 @@ pub fn restart_level(
             }
         }
     }
-
 }
